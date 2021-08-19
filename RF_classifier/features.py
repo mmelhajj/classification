@@ -53,25 +53,37 @@ def generate_features(df, plot_nb, plot_class, cols_predictive, col_date, for_tr
 
         # get feature variable from each predictive col
         for col in cols_predictive:
-            # compute slope
-            data_slope = sdf.loc[df[col_date].between('2020-08-15', '2020-12-31', inclusive='both')]
-            slope = get_slope_from_temporal_series(data_slope[col_date].dt.strftime('%y%j').astype(float),
-                                                   data_slope[col])
-
-            features.update({f'slope_end_year_{col}': slope})
-
+            # compute slope at start of the year
             data_slope = sdf.loc[df[col_date].between('2020-01-1', '2020-3-3', inclusive='both')]
             slope = get_slope_from_temporal_series(data_slope[col_date].dt.strftime('%y%j').astype(float),
                                                    data_slope[col])
 
-            features.update({f'slope_start_year_{col}': slope})
+            features.update({f'slp_start_{col}': slope})
+
+            # compute slope at end of the year
+            data_slope = sdf.loc[df[col_date].between('2020-08-15', '2020-12-31', inclusive='both')]
+            slope = get_slope_from_temporal_series(data_slope[col_date].dt.strftime('%y%j').astype(float),
+                                                   data_slope[col])
+
+            features.update({f'slp_end_{col}': slope})
+
+            # compute slope for the whole year
+            slope = get_slope_from_temporal_series(sdf[col_date].dt.strftime('%y%j').astype(float), sdf[col])
+
+            features.update({f'slp_all_{col}': slope})
+
+            # compute global variation
+            features.update({f'var_{col}': sdf[col].var()})
 
         all_features.append(features)
-    df_features = pd.DataFrame(all_features)
+    df_features_train = pd.DataFrame(all_features)
 
     if for_train:
         # add plot type
         # generate a dict of plot_number and plot-type
         type_of_plots = pd.Series(df[plot_class].values, index=df[plot_nb]).to_dict()
-        df_features['type'] = df_features[plot_nb].map(type_of_plots)
-    return df_features
+        df_features_target = df_features_train[plot_nb].map(type_of_plots)
+
+        return df_features_train, df_features_target
+
+    return df_features_train

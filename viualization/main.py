@@ -1,34 +1,36 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from matplotlib import dates
+
 from RF_classifier.common import gaussian_smoothing
 from RF_classifier.common import get_data_from_shape, set_training
+from RF_classifier.features import generate_features
 from info import outputs
 from viualization.common import plot_temporal_evolution
+from RF_classifier.common import generate_variables
 
+# get stat and prepare features
+stats = pd.read_csv(outputs / 'stats/seg_rad50_sp20.csv', sep=',', parse_dates=['image_date_time_ksa'])
+
+# generate more raw variables
+df = generate_variables(stats, ['label', 'inc_class', 'year'])
+
+# get features for training segments
+# open the segmentation file, it should contain class name for some segments
 shape = outputs / 'seg_rad50_sp20.shp'
 df_label, _ = get_data_from_shape(shape, ['label', 'type'], save_csv=True, path_csv=outputs,
                                   name_csv='training_data.csv')
 df_label = df_label.dropna()
 
-training = set_training(outputs / 'stats/seg_rad50_sp20.csv', df_label, 'label', 'label')
-training['image_date'] = pd.to_datetime(training['image_date'])
-training = training.sort_values(['label', 'image_date'])
+# isolate df rows with knowen class
+training = set_training(df, df_label, 'label', 'label')
+training = training.sort_values(['label', 'image_date_time_ksa'])
 
-df = []
 for (name, inc, year), sdf in training.groupby(by=['label', 'inc_class', 'year']):
-    # apply smoothing only
-    s_sdf = gaussian_smoothing(sdf, 'VV_L', 2)
-    s_sdf = gaussian_smoothing(s_sdf, 'VH_L', 2)
-    df.append(s_sdf)
-df = pd.concat(df)
-
-for (name, inc, year), sdf in df.groupby(by=['label', 'inc_class', 'year']):
     fig, axes = plt.subplots(ncols=1, nrows=2, figsize=(15, 15), sharex='all')
     axes = axes.flatten()
     # convert to dB
-    date = sdf['image_date']
+    date = sdf['image_date_time_ksa']
     vv_db = 10 * np.log10(sdf['VV_L'])
     vh_db = 10 * np.log10(sdf['VH_L'])
     vv_smooth_db = 10 * np.log10(sdf['VV_L_smooth'])

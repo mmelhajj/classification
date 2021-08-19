@@ -66,3 +66,19 @@ def gaussian_smoothing(df, col_data_to_smooth, sigma):
     df[f'{col_data_to_smooth}_smooth'] = gaussian_filter(df[col_data_to_smooth], sigma)
 
     return df
+
+
+def generate_variables(df, col_group_by):
+    """ Add more raw variables to zonal stats
+    Args:
+     df (Datafarme): data frame of raw data
+     col_group_by (list): list of name of cols to isolate sample when adding more raw variables
+    """
+    all_df = []
+    for _, sdf in df.groupby(by=col_group_by):
+        # apply smoothing only
+        s_sdf = gaussian_smoothing(sdf, 'VV_L', 2)
+        s_sdf = gaussian_smoothing(s_sdf, 'VH_L', 2)
+        all_df.append(s_sdf)
+    df = pd.concat(all_df)
+    return df
