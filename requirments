@@ -6,3 +6,5 @@ Pathlib
 rasterio
 fiona
 rasterstats
+geopandas
+scikit-learn

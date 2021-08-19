@@ -17,6 +17,7 @@ bin-release/
 *.xml
 *.iml
 *.tif
+*.png
 
 # folders
 .idea
