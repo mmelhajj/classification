@@ -5,3 +5,4 @@ python
 Pathlib
 rasterio
 fiona
+rasterstats
