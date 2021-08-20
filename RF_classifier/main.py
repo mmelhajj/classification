@@ -11,11 +11,13 @@ from info import outputs
 
 # get stat and prepare features
 stats = pd.read_csv(outputs / 'stats/seg_rad50_sp20.csv', sep=',', parse_dates=['image_date_time_ksa'])
+stats['VV_VH_L'] = stats['VV_L'] - stats['VH_L']
 
 # generate more raw variables
 df = generate_variables(stats, ['label', 'inc_class', 'year'])
 # get features for all segments
-X_est = generate_features(df, 'label', 'type', ['VV_L', 'VV_L_smooth', 'VH_L', 'VH_L_smooth'],
+X_est = generate_features(df, 'label', 'type',
+                          ['VV_L', 'VV_L_smooth', 'VH_L', 'VH_L_smooth', 'VV_VH_L', 'VV_VH_L_smooth'],
                           'image_date_time_ksa', for_train=False)
 
 # get features for training segments
@@ -30,7 +32,8 @@ training = set_training(df, df_label, 'label', 'label')
 training = training.sort_values(['label', 'image_date_time_ksa'])
 
 # get features for training segments
-X_train, Y_target = generate_features(training, 'label', 'type', ['VV_L', 'VV_L_smooth', 'VH_L', 'VH_L_smooth'],
+X_train, Y_target = generate_features(training, 'label', 'type',
+                                      ['VV_L', 'VV_L_smooth', 'VH_L', 'VH_L_smooth', 'VV_VH_L', 'VV_VH_L_smooth'],
                                       'image_date_time_ksa')
 
 # random forest classifier

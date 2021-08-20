@@ -2,12 +2,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from RF_classifier.common import gaussian_smoothing
+from RF_classifier.common import generate_variables
 from RF_classifier.common import get_data_from_shape, set_training
-from RF_classifier.features import generate_features
 from info import outputs
 from viualization.common import plot_temporal_evolution
-from RF_classifier.common import generate_variables
 
 # get stat and prepare features
 stats = pd.read_csv(outputs / 'stats/seg_rad50_sp20.csv', sep=',', parse_dates=['image_date_time_ksa'])
@@ -50,7 +48,7 @@ for (name, inc, year), sdf in training.groupby(by=['label', 'inc_class', 'year']
     plot_temporal_evolution(x=date, y=vh_smooth_db, ax=axes[1], text_font_size=30, y_label='VH(dB)',
                             xylabel_font_size=30, ylim=[-30, -10], marker='d')
 
-    plot_temporal_evolution(x=date, y=vv_smooth_db - vh_smooth_db , ax=axes[2], y_label='VV/VH(dB)', text_font_size=30,
+    plot_temporal_evolution(x=date, y=vv_smooth_db - vh_smooth_db, ax=axes[2], y_label='VV/VH(dB)', text_font_size=30,
                             xylabel_font_size=30, ylim=[0, 15], marker='d')
     # axes[1].xaxis.set_major_locator(dates.MonthLocator(interval=1))
     # axes[1].xaxis.set_major_formatter(dates.DateFormatter('%Y-%m'))

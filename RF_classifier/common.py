@@ -57,7 +57,7 @@ def gaussian_smoothing(df, col_data_to_smooth, sigma):
     """
     Args:
         df (DataFrame): dataframe of data
-        col_data_to_smooth (str): nam of columns to smooth
+        col_data_to_smooth (str): name of columns to smooth
         sigma (float): smooth level
     Return:
         df (DataFrame): the input dataframe with smoothed data
@@ -79,6 +79,21 @@ def generate_variables(df, col_group_by):
         # apply smoothing only
         s_sdf = gaussian_smoothing(sdf, 'VV_L', 2)
         s_sdf = gaussian_smoothing(s_sdf, 'VH_L', 2)
+        s_sdf = gaussian_smoothing(s_sdf, 'VV_VH_L', 2)
         all_df.append(s_sdf)
     df = pd.concat(all_df)
+    return df
+
+
+def normalise_cols(df, cols):
+    """ normalize data between 0 and 1
+    Args:
+        df (DataFrame): dataframe of data
+        cols (list): name of columns to normalize
+    Return:
+        df (DataFrame): the input dataframe with smoothed data
+    """
+    for cl in cols:
+        df[cl] = (df[cl] - df[cl].min()) / (df[cl].max() - df[cl].min())
+
     return df
