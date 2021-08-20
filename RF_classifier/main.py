@@ -1,6 +1,8 @@
 import geopandas as gpd
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import f1_score
 
 from RF_classifier.common import generate_variables
 from RF_classifier.common import get_data_from_shape, set_training
@@ -45,3 +47,11 @@ X_est['pred'] = model.predict(X_est)
 gdf = gpd.read_file(shape)
 gdf = gdf.merge(X_est, left_on='label', right_on='label', how='inner')
 gdf.to_file(driver='ESRI Shapefile', filename=outputs / "result.shp")
+
+# generate confusion matrix
+df = gdf[['ref_hand', 'pred']]
+df = df.dropna()
+conf_matrix = confusion_matrix(df['ref_hand'], df['pred'], labels=df['ref_hand'].unique())
+fscore = f1_score(df['ref_hand'], df['pred'], average='macro')
+
+print('fscore:', fscore)

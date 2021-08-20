@@ -27,7 +27,7 @@ training = set_training(df, df_label, 'label', 'label')
 training = training.sort_values(['label', 'image_date_time_ksa'])
 
 for (name, inc, year), sdf in training.groupby(by=['label', 'inc_class', 'year']):
-    fig, axes = plt.subplots(ncols=1, nrows=2, figsize=(15, 15), sharex='all')
+    fig, axes = plt.subplots(ncols=1, nrows=3, figsize=(15, 15), sharex='all')
     axes = axes.flatten()
     # convert to dB
     date = sdf['image_date_time_ksa']
@@ -39,10 +39,10 @@ for (name, inc, year), sdf in training.groupby(by=['label', 'inc_class', 'year']
 
     # plot for VV
     plot_temporal_evolution(x=date, y=vv_db, ax=axes[0], y_label='VV(dB)', text_font_size=30, xylabel_font_size=30,
-                            ylim=[-30, -5], marker='o', ls='-')
+                            ylim=[-25, -5], marker='o', ls='-')
 
     plot_temporal_evolution(x=date, y=vv_smooth_db, ax=axes[0], y_label='VV(dB)', text_font_size=30,
-                            xylabel_font_size=30, ylim=[-30, -5], marker='d')
+                            xylabel_font_size=30, ylim=[-25, -5], marker='d')
 
     plot_temporal_evolution(x=date, y=vh_db, ax=axes[1], text_font_size=30, y_label='VH(dB)', xylabel_font_size=30,
                             ylim=[-30, -10], marker='o', ls='-')
@@ -50,6 +50,8 @@ for (name, inc, year), sdf in training.groupby(by=['label', 'inc_class', 'year']
     plot_temporal_evolution(x=date, y=vh_smooth_db, ax=axes[1], text_font_size=30, y_label='VH(dB)',
                             xylabel_font_size=30, ylim=[-30, -10], marker='d')
 
+    plot_temporal_evolution(x=date, y=vv_smooth_db - vh_smooth_db , ax=axes[2], y_label='VV/VH(dB)', text_font_size=30,
+                            xylabel_font_size=30, ylim=[0, 15], marker='d')
     # axes[1].xaxis.set_major_locator(dates.MonthLocator(interval=1))
     # axes[1].xaxis.set_major_formatter(dates.DateFormatter('%Y-%m'))
     # set title
