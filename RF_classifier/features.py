@@ -1,4 +1,5 @@
 import pandas as pd
+from numpy import trapz
 from scipy.ndimage import gaussian_filter
 from scipy.stats import linregress
 
@@ -74,6 +75,11 @@ def generate_features(df, plot_nb, plot_class, cols_predictive, col_date, for_tr
 
             # compute global variation
             features.update({f'var_{col}': sdf[col].var()})
+
+            # compute the area of the curve
+            area = trapz(sdf[col], dx=5)
+
+            features.update({f'area_{col}': area})
 
         all_features.append(features)
     df_features_train = pd.DataFrame(all_features)
