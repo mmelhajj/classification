@@ -1,5 +1,5 @@
 import pandas as pd
-from numpy import trapz
+from numpy import trapz, log10
 from scipy.ndimage import gaussian_filter
 from scipy.stats import linregress
 
@@ -32,7 +32,7 @@ def get_slope_from_temporal_series(x, y):
     return slope
 
 
-def generate_features(df, plot_nb, plot_class, cols_predictive, col_date, for_train=True):
+def generate_features(df, plot_nb, plot_class, cols_predictive, col_date, convert=None):
     """Generates features (input to RF classifier)
     Args:
         df (DataFrame): stats dataframe wih index date
@@ -40,17 +40,22 @@ def generate_features(df, plot_nb, plot_class, cols_predictive, col_date, for_tr
         plot_class (str): col name for type of the plot
         cols_predictive (list): list of columns name of predictive variables
         col_date (str): name of the cols contains the date information
-        for_train (bool)= True features for training, False feature for estimation
+        convert (list): name of cols to convert to dB unit, this is specific to SAR data in linear unit
     Return:
         df (DataFrame): dataframe of features
     """
 
+    # convert SAR data to dB
+    if convert:
+        for cl in convert:
+            df[cl] = 10 * log10(df[cl])
     # get features
     all_features = []
 
     for nb, sdf in df.groupby(by=plot_nb):
         features = {}
         features.update({f'label': nb})
+        features.update({f'ref_class': sdf[plot_class].unique()[0]})
 
         # get feature variable from each predictive col
         for col in cols_predictive:
@@ -83,13 +88,5 @@ def generate_features(df, plot_nb, plot_class, cols_predictive, col_date, for_tr
 
         all_features.append(features)
     df_features_train = pd.DataFrame(all_features)
-
-    if for_train:
-        # add plot type
-        # generate a dict of plot_number and plot-type
-        type_of_plots = pd.Series(df[plot_class].values, index=df[plot_nb]).to_dict()
-        df_features_target = df_features_train[plot_nb].map(type_of_plots)
-
-        return df_features_train, df_features_target
 
     return df_features_train

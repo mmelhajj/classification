@@ -60,14 +60,15 @@ def plot_temporal_evolution(x, y, ax, y_label=None, title=None, color=None, labe
     ax.tick_params(axis='y', labelsize=xylabel_font_size)
 
 
-def plot_hist(x, bins, x_label, y_label, title, ax, color='black', label=None, ylim=None, alpha=None):
+def plot_hist(x, bins, x_label, y_label, title, ax, color='black', font=35, rotation=90, label=None, ylim=None,
+              alpha=None):
     ax.hist(x, bins, color=color, label=label, alpha=alpha)
 
-    ax.set_title(title, fontsize=35)
-    ax.set_ylabel(y_label, fontsize=35)
-    ax.set_xlabel(x_label, fontsize=35)
+    ax.set_title(title, fontsize=font)
+    ax.set_ylabel(y_label, fontsize=font)
+    ax.set_xlabel(x_label, fontsize=font)
 
     ax.set_ylim(ylim)
 
-    ax.tick_params(axis='x', labelsize=30, rotation=90)
-    ax.tick_params(axis='y', labelsize=30)
+    ax.tick_params(axis='x', labelsize=font, rotation=rotation)
+    ax.tick_params(axis='y', labelsize=font)
