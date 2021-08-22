@@ -55,14 +55,14 @@ def generate_features(df, plot_nb, plot_class, cols_predictive, col_date):
         # get feature variable from each predictive col
         for col in cols_predictive:
             # compute slope at start of the year
-            data_slope = sdf.loc[df[col_date].between('2020-01-1', '2020-3-3', inclusive='both')]
+            data_slope = sdf.loc[df[col_date].between('2020-01-1', '2020-7-1', inclusive='both')]
             slope = get_slope_from_temporal_series(data_slope[col_date].dt.strftime('%y%j').astype(float),
                                                    data_slope[col])
 
             features.update({f'slp_start_{col}': slope})
 
             # compute slope at end of the year
-            data_slope = sdf.loc[df[col_date].between('2020-08-15', '2020-12-31', inclusive='both')]
+            data_slope = sdf.loc[df[col_date].between('2020-08-1', '2020-12-31', inclusive='both')]
             slope = get_slope_from_temporal_series(data_slope[col_date].dt.strftime('%y%j').astype(float),
                                                    data_slope[col])
 

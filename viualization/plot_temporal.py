@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-
+from RF_classifier.common import normalise_cols
 from RF_classifier.example import get_example
 from info import outputs
 from viualization.common import plot_temporal_evolution
@@ -20,19 +20,19 @@ for (name, inc, year), sdf in df.groupby(by=['label', 'inc_class', 'year']):
 
     # plot for VV
     plot_temporal_evolution(x=date, y=vv_db, ax=axes[0], y_label='VV(dB)', text_font_size=30, xylabel_font_size=30,
-                            ylim=[-25, -5], marker='o', ls='-')
+                            ylim=None, marker='o', ls='-')
 
     plot_temporal_evolution(x=date, y=vv_smooth_db, ax=axes[0], y_label='VV(dB)', text_font_size=30,
-                            xylabel_font_size=30, ylim=[-25, -5], marker='d')
+                            xylabel_font_size=30, ylim=None, marker='d')
 
     plot_temporal_evolution(x=date, y=vh_db, ax=axes[1], text_font_size=30, y_label='VH(dB)', xylabel_font_size=30,
-                            ylim=[-30, -10], marker='o', ls='-')
+                            ylim=None, marker='o', ls='-')
 
     plot_temporal_evolution(x=date, y=vh_smooth_db, ax=axes[1], text_font_size=30, y_label='VH(dB)',
-                            xylabel_font_size=30, ylim=[-30, -10], marker='d')
+                            xylabel_font_size=30, ylim=None, marker='d')
 
     plot_temporal_evolution(x=date, y=vv_smooth_db - vh_smooth_db, ax=axes[2], y_label='VV/VH(dB)', text_font_size=30,
-                            xylabel_font_size=30, ylim=[0, 15], marker='d')
+                            xylabel_font_size=30, ylim=None, marker='d')
     # axes[1].xaxis.set_major_locator(dates.MonthLocator(interval=1))
     # axes[1].xaxis.set_major_formatter(dates.DateFormatter('%Y-%m'))
     # set title
