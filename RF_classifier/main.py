@@ -4,27 +4,16 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import f1_score
 from sklearn.model_selection import train_test_split
 
-from RF_classifier.common import generate_variables
-from RF_classifier.features import generate_features
+from RF_classifier.example import get_example
 from info import outputs
 
-# get stat and prepare features
-stats = pd.read_csv(outputs / 'stats/seg_rad50_sp20_test.csv', sep=',', parse_dates=['image_date_time_ksa'])
-stats['VV_VH_L'] = stats['VV_L'] / stats['VH_L']
-stats = stats.sort_values(['label', 'image_date_time_ksa'])
-
-# generate more raw variables
-df = generate_variables(stats, ['label', 'inc_class', 'year'])
-
-# get features for all segments
-features = generate_features(df, 'label', 'ref_hand',
-                             ['VV_L', 'VV_L_smooth', 'VH_L', 'VH_L_smooth', 'VV_VH_L', 'VV_VH_L_smooth'],
-                             'image_date_time_ksa')
+# get feature example
+features, _ = get_example()
 
 # define inputs and output and split
 df_x = features.drop(['label', 'ref_class'], axis='columns')
 df_y = features['ref_class']
-X_train, X_test, y_train, y_test = train_test_split(df_x, df_y, test_size=0.5, random_state=0)
+X_train, X_test, y_train, y_test = train_test_split(df_x, df_y, test_size=0.2, random_state=0)
 
 # fit RF regressor classifier: https://towardsdatascience.com/classification-with-random-forests-in-python-29b8381680ed
 model = RandomForestClassifier(n_estimators=100, random_state=24)
@@ -35,7 +24,7 @@ y_pred = model.predict(X_test)
 
 # get score
 fscore = f1_score(y_test, y_pred, average='macro')
-print(f'Fscore : {fscore}*100')
+print(f'Fscore : {fscore * 100}')
 
 # get and plot importance
 importance = model.feature_importances_

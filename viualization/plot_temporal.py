@@ -1,28 +1,21 @@
 import matplotlib.pyplot as plt
-import pandas as pd
-import numpy as np
-from RF_classifier.common import generate_variables
-from RF_classifier.features import generate_features
+
+from RF_classifier.example import get_example
 from info import outputs
-from viualization.common import plot_hist, plot_temporal_evolution
+from viualization.common import plot_temporal_evolution
 
-# get stat and prepare features
-stats = pd.read_csv(outputs / 'stats/seg_rad50_sp20_test.csv', sep=',', parse_dates=['image_date_time_ksa'])
-stats['VV_VH_L'] = stats['VV_L'] / stats['VH_L']
-stats = stats.sort_values(['label', 'image_date_time_ksa'])
-
-# generate more raw variables
-df = generate_variables(stats, ['label', 'inc_class', 'year'])
+# get example
+_, df = get_example()
 
 for (name, inc, year), sdf in df.groupby(by=['label', 'inc_class', 'year']):
     fig, axes = plt.subplots(ncols=1, nrows=3, figsize=(15, 15), sharex='all')
     axes = axes.flatten()
     # convert to dB
     date = sdf['image_date_time_ksa']
-    vv_db = 10 * np.log10(sdf['VV_L'])
-    vh_db = 10 * np.log10(sdf['VH_L'])
-    vv_smooth_db = 10 * np.log10(sdf['VV_L_smooth'])
-    vh_smooth_db = 10 * np.log10(sdf['VH_L_smooth'])
+    vv_db = sdf['VV_dB']
+    vh_db = sdf['VH_dB']
+    vv_smooth_db = sdf['VV_dB_smooth']
+    vh_smooth_db = sdf['VH_dB_smooth']
     plot = sdf['ref_hand'].unique()[0]
 
     # plot for VV

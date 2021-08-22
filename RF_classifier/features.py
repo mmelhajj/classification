@@ -1,5 +1,5 @@
 import pandas as pd
-from numpy import trapz, log10
+from numpy import trapz
 from scipy.ndimage import gaussian_filter
 from scipy.stats import linregress
 
@@ -32,7 +32,7 @@ def get_slope_from_temporal_series(x, y):
     return slope
 
 
-def generate_features(df, plot_nb, plot_class, cols_predictive, col_date, convert=None):
+def generate_features(df, plot_nb, plot_class, cols_predictive, col_date):
     """Generates features (input to RF classifier)
     Args:
         df (DataFrame): stats dataframe wih index date
@@ -40,15 +40,10 @@ def generate_features(df, plot_nb, plot_class, cols_predictive, col_date, conver
         plot_class (str): col name for type of the plot
         cols_predictive (list): list of columns name of predictive variables
         col_date (str): name of the cols contains the date information
-        convert (list): name of cols to convert to dB unit, this is specific to SAR data in linear unit
     Return:
         df (DataFrame): dataframe of features
     """
 
-    # convert SAR data to dB
-    if convert:
-        for cl in convert:
-            df[cl] = 10 * log10(df[cl])
     # get features
     all_features = []
 
