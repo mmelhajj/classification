@@ -13,7 +13,7 @@ features, _ = get_example()
 # define inputs and output and split
 df_x = features.drop(['label', 'ref_class'], axis='columns')
 df_y = features['ref_class']
-X_train, X_test, y_train, y_test = train_test_split(df_x, df_y, test_size=0.2, random_state=0)
+X_train, X_test, y_train, y_test = train_test_split(df_x, df_y, test_size=0.5, random_state=0)
 
 # fit RF regressor classifier: https://towardsdatascience.com/classification-with-random-forests-in-python-29b8381680ed
 model = RandomForestClassifier(n_estimators=100, random_state=24)

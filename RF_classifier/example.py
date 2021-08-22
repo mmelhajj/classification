@@ -9,6 +9,7 @@ from info import outputs
 def get_example():
     # get stat and prepare features
     stats = pd.read_csv(outputs / 'stats/seg_rad50_sp20_test.csv', sep=',', parse_dates=['image_date_time_ksa'])
+    stats = stats[stats['nbPixels'] >= 100]
     stats['VV_dB'] = 10 * np.log10(stats['VV_L'])
     stats['VH_dB'] = 10 * np.log10(stats['VH_L'])
     stats['VV_VH_dB'] = stats['VV_dB'] - stats['VH_dB']
