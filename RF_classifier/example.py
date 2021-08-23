@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from RF_classifier.common import smooth_variables
+from RF_classifier.common import smooth_variables, normalise_cols
 from RF_classifier.features import generate_features
 from info import outputs
 
@@ -22,5 +22,12 @@ def get_example():
     # get features for all segments
     features = generate_features(df, 'label', 'ref_hand',
                                  ['VV_dB', 'VV_dB_smooth', 'VH_dB', 'VH_dB_smooth', 'VV_VH_dB', 'VV_VH_dB_smooth'],
-                                 'image_date_time_ksa')
-    return features, df
+                                 'image_date_time_ksa', clos_cmp=['VV_dB_smooth', 'VH_dB_smooth'])
+
+    var_names = features.columns.to_list()
+    var_names.remove('label')
+    var_names.remove('ref_class')
+
+    features = normalise_cols(features, var_names)
+
+    return features, df, var_names
