@@ -17,7 +17,7 @@ df_y = features['ref_class']
 X_train, X_test, y_train, y_test = train_test_split(df_x, df_y, test_size=0.5, random_state=0)
 
 # fit RF regressor classifier: https://towardsdatascience.com/classification-with-random-forests-in-python-29b8381680ed
-model = RandomForestClassifier(n_estimators=100, random_state=0)
+model = RandomForestClassifier(n_estimators=70, random_state=0)
 model.fit(X_train, y_train)
 
 # save model
