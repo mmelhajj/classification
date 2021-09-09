@@ -63,13 +63,13 @@ def generate_features(df, plot_nb, plot_class, cols_predictive, col_date, clos_c
         # get feature variable from each predictive col
         for col in cols_predictive:
             # compute slope at start of the year
-            data_slope = sdf.loc[df[col_date].between('2020-01-1', '2020-7-1', inclusive='both')]
+            data_slope = sdf.loc[df[col_date].between('2015-01-1', '2015-7-1', inclusive='both')]
             slope, _ = get_slope_from_temporal_series(data_slope[col_date].dt.strftime('%y%j').astype(float),
                                                       data_slope[col])
             features.update({f'slp_start_{col}': slope})
 
             # compute slope at end of the year
-            data_slope = sdf.loc[df[col_date].between('2020-08-1', '2020-12-31', inclusive='both')]
+            data_slope = sdf.loc[df[col_date].between('2015-08-1', '2015-12-31', inclusive='both')]
             slope, _ = get_slope_from_temporal_series(data_slope[col_date].dt.strftime('%y%j').astype(float),
                                                       data_slope[col])
             features.update({f'slp_end_{col}': slope})
@@ -82,7 +82,7 @@ def generate_features(df, plot_nb, plot_class, cols_predictive, col_date, clos_c
             features.update({f'var_{col}': sdf[col].var()})
 
             # compute annual mean
-            data_mean = sdf.loc[df[col_date].between('2020-03-1', '2020-08-1', inclusive='both')]
+            data_mean = sdf.loc[df[col_date].between('2015-03-1', '2015-08-1', inclusive='both')]
             features.update(
                 {f'mean_{col}': data_mean[col].mean()})
 

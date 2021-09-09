@@ -3,14 +3,15 @@ from pathlib import Path
 
 import pandas as pd
 
-from info import outputs, sar_path
+from info import outputs, sar_clean_path, vect_clean_path
 from zonal_stats.zonal_stat_sar import mean_and_count_zonal_stat
 
 # path to inputs
-shape = Path(f"{outputs}/seg_rad50_sp20.shp")
+# shape = Path(f"{outputs}/seg_rad50_sp20.shp")
+shape = vect_clean_path / 'hand_map.shp'
 
 # images
-raster_files = Path(f"{sar_path}").glob('*.tif')
+raster_files = Path(f"{sar_clean_path}").glob('*.tif')
 dfs = []
 for raster in raster_files:
     print(raster)
@@ -38,4 +39,4 @@ out = Path(outputs) / 'stats/'
 if not os.path.exists(out):
     os.makedirs(out)
 
-df.to_csv(f"{out}/seg_rad50_sp20.csv", index=False)
+df.to_csv(f"{out}/hand_map.csv", index=False)
