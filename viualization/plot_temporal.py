@@ -7,8 +7,6 @@ from viualization.common import plot_temporal_evolution
 # get example
 _, df, _ = get_example()
 
-
-
 fig, axes = plt.subplots(ncols=2, nrows=4, figsize=(15, 15), sharex='all', sharey='all')
 axes = axes.flatten()
 
@@ -21,8 +19,9 @@ for id, (name, sdf) in enumerate(df.groupby(by=['type_1st_h'])):
         # plot = sdf['ref_hand'].unique()[0]
 
         # plot for VV
-        plot_temporal_evolution(x=date, y=vv_smooth_db, ax=axes[id], y_label='VV(dB)', text_font_size=30, xylabel_font_size=30,
-                                marker='o', ls='-', ylim=[0, 1])
+        plot_temporal_evolution(x=date, y=vv_smooth_db, ax=axes[id], y_label='VV(dB)', text_font_size=30,
+                                xylabel_font_size=30,
+                                marker='o', ls='-', ylim=None)
 
     axes[id].set_title(name)
 
@@ -37,5 +36,5 @@ for id, (name, sdf) in enumerate(df.groupby(by=['type_1st_h'])):
     # save figure
     # fig_name = inc + "_" + plot + "_" + name.astype(str)
 plt.savefig(f"{outputs}/figures/graph.png", bbox_inches='tight', pad_inches=0.1)
-
+plt.show()
 plt.close()

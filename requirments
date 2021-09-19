@@ -8,3 +8,5 @@ fiona
 rasterstats
 geopandas
 scikit-learn
+fastdtw
+seaborn

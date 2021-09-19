@@ -2,8 +2,16 @@ import numpy as np
 import pandas as pd
 
 from RF_classifier.common import smooth_variables, normalise_cols
+from dtw_classifier.compute_dtw import dtw_compute
 from RF_classifier.features import generate_features
 from info import outputs
+
+
+# if __name__ == '__main__':
+#     # get example
+#     _, df_query, _ = get_example()
+#     df_template = pd.read_csv(outputs / 'template.csv', sep=',')
+#     df = dtw_compute(df_query, 'name', ['VV_dB', 'VH_dB'], df_template, 'ref_class')
 
 
 def get_example():
@@ -18,20 +26,24 @@ def get_example():
     stats = stats.sort_values(['name', 'image_date_time_ksa'])
 
     # scale data between 0 and 1
-    stats = normalise_cols(stats, ['VV_dB', 'VH_dB'])
+    # stats = normalise_cols(stats, ['VV_dB', 'VH_dB'], 'name')
 
     # generate more raw variables
     df = smooth_variables(stats, ['name', 'inc_class', 'year'], ['VV_dB', 'VH_dB', 'VV_VH_dB'], 2)
 
+    # get dtw
+    df_template = pd.read_csv(outputs / 'template.csv', sep=',')
+    dtw = dtw_compute(df, 'name', ['VV_dB_smooth', 'VH_dB_smooth'], df_template, 'ref_class')
+
     # get features for all segments
-    features = generate_features(df, 'name', 'type_1st_h',
-                                 ['VV_dB', 'VV_dB_smooth', 'VH_dB', 'VH_dB_smooth', 'VV_VH_dB', 'VV_VH_dB_smooth'],
+    features = generate_features(df, 'name', 'type_1st_h', ['VV_dB_smooth', 'VH_dB_smooth', 'VV_VH_dB_smooth'],
                                  'image_date_time_ksa', clos_cmp=['VV_dB_smooth', 'VH_dB_smooth'])
+
+    features = features.merge(dtw, left_on='label', right_on='label')
 
     # normalize features between 0 and 1
     var_names = features.columns.to_list()
     var_names.remove('label')
     var_names.remove('ref_class')
-    features = normalise_cols(features, var_names)
 
     return features, df, var_names

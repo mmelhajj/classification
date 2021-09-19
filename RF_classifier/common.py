@@ -86,15 +86,24 @@ def smooth_variables(df, col_group_by, cols, sigma):
     return df
 
 
-def normalise_cols(df, cols):
-    """ normalize data between 0 and 1
+def normalise_cols(df, cols, plot_id):
+    """ normalize data between 0 and 1 for each plot seperately
     Args:
         df (DataFrame): dataframe of data
         cols (list): name of columns to normalize
+        plot_id (str): col name of plot id
     Return:
         df (DataFrame): the input dataframe with smoothed data
     """
-    for cl in cols:
-        df[cl] = (df[cl] - df[cl].min()) / (df[cl].max() - df[cl].min())
+
+    all_df = []
+
+    for _, sdf in df.groupby(by=[plot_id]):
+        for cl in cols:
+            sdf[cl] = (sdf[cl] - sdf[cl].min()) / (sdf[cl].max() - sdf[cl].min())
+
+        # append all sdf
+        all_df.append(sdf)
+    df = pd.concat(all_df)
 
     return df

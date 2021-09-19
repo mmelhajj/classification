@@ -12,14 +12,14 @@ from viualization.common import plot_temporal_evolution
 _, df, _ = get_example()
 
 # define date to extract the template
-cycle_start_end = {'wheat': {'start': datetime(2015, 1, 1), 'end': datetime(2015, 12, 31)},
-                   'alfaalfa': {'start': datetime(2015, 1, 1), 'end': datetime(2015, 12, 31)},
-                   'barely': {'start': datetime(2015, 1, 1), 'end': datetime(2015, 12, 31)},
-                   'fruit': {'start': datetime(2015, 1, 1), 'end': datetime(2015, 12, 31)},
-                   'olive': {'start': datetime(2015, 1, 1), 'end': datetime(2015, 12, 31)},
-                   'onion': {'start': datetime(2015, 1, 1), 'end': datetime(2015, 12, 31)},
-                   'potato': {'start': datetime(2015, 1, 1), 'end': datetime(2015, 12, 31)},
-                   'sudanese corn': {'start': datetime(2015, 1, 1), 'end': datetime(2015, 12, 31)}}
+cycle_start_end = {'wheat': {'start': datetime(2014, 1, 1), 'end': datetime(2015, 12, 31)},
+                   'alfaalfa': {'start': datetime(2014, 1, 1), 'end': datetime(2015, 12, 31)},
+                   'barely': {'start': datetime(2014, 1, 1), 'end': datetime(2015, 12, 31)},
+                   'fruit': {'start': datetime(2014, 1, 1), 'end': datetime(2015, 12, 31)},
+                   'olive': {'start': datetime(2014, 1, 1), 'end': datetime(2015, 12, 31)},
+                   'onion': {'start': datetime(2014, 1, 1), 'end': datetime(2015, 12, 31)},
+                   'potato': {'start': datetime(2014, 1, 1), 'end': datetime(2015, 12, 31)},
+                   'sudanese corn': {'start': datetime(2014, 1, 1), 'end': datetime(2015, 12, 31)}}
 
 # average the profile for each crop type separately
 all_df = []
