@@ -4,6 +4,7 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 import pandas as pd
 
+from RF_classifier.common import normalise_cols
 from RF_classifier.example import get_example
 from info import outputs
 from viualization.common import plot_temporal_evolution
@@ -33,21 +34,47 @@ for name, sdf in df.groupby(by=['type_1st_h']):
 
 df = pd.concat(all_df)
 
+# scale data between 0 and 1
+# use ref class as grouper
+df = normalise_cols(df, ['VV_dB', 'VH_dB', 'VV_VH_dB', 'VV_dB_smooth', 'VH_dB_smooth', 'VV_VH_dB_smooth'], 'ref_class')
+
 # save in df
 with open(outputs / 'template.csv', 'w') as temp:
     df.to_csv(temp, index=True, line_terminator='\n')
 
 # plot to verify
 if __name__ == '__main__':
-    fig, axes = plt.subplots(ncols=2, nrows=4, figsize=(15, 15), sharex='all', sharey='all')
+    fig, axes = plt.subplots(ncols=2, nrows=4, figsize=(15, 15), sharex='all')
     axes = axes.flatten()
     for id, (name, sdf) in enumerate(df.groupby(by=['ref_class'])):
+        # set X ad Ys
         date = sdf.index
         vv_db = sdf['VV_dB']
         vv_smooth_db = sdf['VV_dB_smooth']
 
+        vh_db = sdf['VH_dB']
+        vh_smooth_db = sdf['VH_dB_smooth']
+
+        vv_vh_db = sdf['VV_VH_dB']
+        vv_vh_smooth_db = sdf['VV_VH_dB_smooth']
+
         # plot for VV
-        plot_temporal_evolution(x=date, y=vv_smooth_db, ax=axes[id], y_label='VV(dB)', text_font_size=30,
-                                xylabel_font_size=30, marker='o', ls='-', ylim=None)
+        plot_temporal_evolution(x=date, y=vv_smooth_db, ax=axes[id], y_label='', text_font_size=30,
+                                xylabel_font_size=30, marker='o', ls='-', ylim=None, label='VV')
+        plot_temporal_evolution(x=date, y=vv_db, ax=axes[id], y_label='', text_font_size=30,
+                                xylabel_font_size=30, marker='o', ls='-', ylim=None, label='VV_sm')
+        # # plot for VH
+        # plot_temporal_evolution(x=date, y=vh_smooth_db, ax=axes[id], y_label='', text_font_size=30,
+        #                         xylabel_font_size=30, marker='x', ls='-', ylim=None, label='VH')
+        # plot_temporal_evolution(x=date, y=vh_db, ax=axes[id], y_label='', text_font_size=30,
+        #                         xylabel_font_size=30, marker='x', ls='-', ylim=None, label='VH_sm')
+        # # plot for VV-VH
+        # plot_temporal_evolution(x=date, y=vv_vh_smooth_db, ax=axes[id], y_label='', text_font_size=30,
+        #                         xylabel_font_size=30, marker='x', ls='-', ylim=None, label='VV-VH')
+        # plot_temporal_evolution(x=date, y=vv_vh_db, ax=axes[id], y_label='', text_font_size=30,
+        #                         xylabel_font_size=30, marker='x', ls='-', ylim=None, label='VV-VH_sm')
+
+        axes[id].legend(ncol=2)
+
         axes[id].set_title(name)
     plt.show()

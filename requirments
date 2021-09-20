@@ -10,3 +10,4 @@ geopandas
 scikit-learn
 fastdtw
 seaborn
+statsmodels

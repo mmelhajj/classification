@@ -39,11 +39,11 @@ def get_slope_from_temporal_series(x, y):
     return slope, r_value ** 2
 
 
-def generate_features(df, plot_nb, plot_class, cols_predictive, col_date, clos_cmp=None):
+def generate_features(df, plot_name, plot_class, cols_predictive, col_date, clos_cmp=None):
     """Generates features (input to RF classifier)
     Args:
         df (DataFrame): stats dataframe wih index date
-        plot_nb (str): name of cols of plots name
+        plot_name (str): name of cols of plots name
         plot_class (str): col name for type of the plot
         cols_predictive (list): list of columns name of predictive variables
         col_date (str): name of the cols contains the date information
@@ -55,7 +55,7 @@ def generate_features(df, plot_nb, plot_class, cols_predictive, col_date, clos_c
     # get features
     all_features = []
 
-    for nb, sdf in df.groupby(by=plot_nb):
+    for nb, sdf in df.groupby(by=plot_name):
         features = {}
         features.update({f'label': nb})
         features.update({f'ref_class': sdf[plot_class].unique()[0]})
@@ -90,6 +90,11 @@ def generate_features(df, plot_nb, plot_class, cols_predictive, col_date, clos_c
             area = trapz(sdf[col], x=sdf[col_date].dt.strftime('%y%j').astype(float))
             features.update({f'area_{col}': area})
 
+            # get the position of the max
+            pos = pd.to_datetime(sdf.loc[sdf[col] == sdf[col].max()][col_date].values[0]).dayofyear
+            features.update({f'pos_{col}': pos})
+
+            # two cols corr
             if clos_cmp:
                 # get combination with size of 2
                 comb = get_bi_combination(clos_cmp)

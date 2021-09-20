@@ -1,3 +1,4 @@
+import gdecomp
 import geopandas as gpd
 import numpy as np
 import pandas as pd
@@ -101,6 +102,38 @@ def normalise_cols(df, cols, plot_id):
     for _, sdf in df.groupby(by=[plot_id]):
         for cl in cols:
             sdf[cl] = (sdf[cl] - sdf[cl].min()) / (sdf[cl].max() - sdf[cl].min())
+
+        # append all sdf
+        all_df.append(sdf)
+    df = pd.concat(all_df)
+
+    return df
+
+
+def gauss_decomp(df, cols, plot_id):
+    """ decompose the waveform with a gaussians
+    Args:
+        df (DataFrame): dataframe of data
+        cols (list): name of columns to apply decomp
+        plot_id (str): col name of plot id
+    Return:
+        df (DataFrame): the input dataframe with smoothed data
+    """
+
+    all_df = []
+
+    for plot_id, sdf in df.groupby(by=[plot_id]):
+        for cl in cols:
+            out = gdecomp.GaussianDecomposition(sdf[cl].values)
+            out = np.reshape(out, (-1, 3))
+
+            # simulate the gauss
+            fit = np.zeros(sdf[cl].size)
+            x = np.arange(len(sdf[cl]))
+            for i in range(out.shape[0]):
+                fit += out[i, 0] / (np.sqrt(2 * np.pi) * out[i, 2]) * np.exp(
+                    -(x - out[i, 1]) ** 2 / (2 * out[i, 2] ** 2))
+            sdf[f"{cl}_decomp"] = fit
 
         # append all sdf
         all_df.append(sdf)
