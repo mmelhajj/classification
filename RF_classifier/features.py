@@ -69,7 +69,7 @@ def generate_features(df, plot_name, plot_class, cols_predictive, col_date, clos
             features.update({f'slp_start_{col}': slope})
 
             # compute slope at end of the year
-            data_slope = sdf.loc[df[col_date].between('2015-08-1', '2015-12-31', inclusive='both')]
+            data_slope = sdf.loc[df[col_date].between('2015-08-1', '2015-9-1', inclusive='both')]
             slope, _ = get_slope_from_temporal_series(data_slope[col_date].dt.strftime('%y%j').astype(float),
                                                       data_slope[col])
             features.update({f'slp_end_{col}': slope})

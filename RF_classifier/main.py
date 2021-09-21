@@ -14,10 +14,10 @@ features, _, var_names = get_example()
 # define inputs and output and split
 df_x = features[var_names]
 df_y = features['ref_class']
-X_train, X_test, y_train, y_test = train_test_split(df_x, df_y, test_size=0.2, random_state=0)
+X_train, X_test, y_train, y_test = train_test_split(df_x, df_y, test_size=0.3, random_state=0)
 
 # fit RF regressor classifier: https://towardsdatascience.com/classification-with-random-forests-in-python-29b8381680ed
-model = RandomForestClassifier(n_estimators=50, random_state=0)
+model = RandomForestClassifier(n_estimators=100, random_state=0)
 model.fit(X_train, y_train)
 
 # save model
@@ -47,5 +47,8 @@ if __name__ == '__main__':
 
     # save figure
     plt.savefig(f"{outputs}/importance.png", dpi=300, bbox_inches='tight', pad_inches=0.1)
+
+
+    # map
 
     plt.show()
