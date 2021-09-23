@@ -4,7 +4,7 @@ from pathlib import Path
 import pandas as pd
 
 from info import outputs, sar_clean_path, vect_clean_path
-from zonal_stats.zonal_stat_sar import mean_and_count_zonal_stat
+from zonal_stats.zonal_stat import mean_and_count_zonal_stat
 
 # path to inputs
 # shape = Path(f"{outputs}/seg_rad50_sp20.shp")
