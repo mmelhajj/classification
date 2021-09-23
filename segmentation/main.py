@@ -2,11 +2,11 @@ import subprocess
 
 import numpy as np
 
-from info import optical_path, outputs, otb
+from info import optical_path_clean, outputs, otb
 from segmentation.common import stack_layer
 
 # stack layers
-inputs = [im for im in optical_path.glob('*.tif')]
+inputs = [im for im in optical_path_clean.glob('*.tif')]
 stack_layer(inputs, 1, outputs / 'stack.tif', 100, np.int16)
 
 # run otb Large scale segmentation
