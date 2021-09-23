@@ -7,12 +7,88 @@ from scipy.stats import linregress
 
 
 def get_bi_combination(a_list):
+    """gives a bi-combination for list items
+
+    Args:
+        a_list (list): list col names to apply combination of 2 elements
+
+    Returns:
+        combination
+    """
     all_combinations = [i for i in combinations(a_list, 2)]
     return all_combinations
 
 
-def gaussian_smoothing(df, col_data_to_smooth, sigma):
+def peaks_pos(df, col_date, data):
+    """ Gives the position (x-value) of the peak (max value)
+    Args:
+        df (Dataframe): data frame of data
+        col_date (str): name of the column containing the x-data (here datetime)
+        data (str): name of the column containing the y-data (SAR signal, NDVI, ....)
+    Returns:
+        list of peaks position
     """
+
+    peaks = []
+    for i, (a, b) in enumerate(zip(df[data], df[data][1:])):
+        if b < a:
+            peaks.append(df[col_date].iloc[i])
+            break
+    return peaks
+
+
+def get_min_max_pos(df, col_date, data, date1, date2):
+    """ Gives the position (x-value) of the min and the max value
+    Args:
+        df (Dataframe): data frame of data
+        col_date (str): name of the column containing the x-data (here datetime)
+        data (str): name of the column containing the y-data (SAR signal, NDVI, ....)
+        date1(str): first date %Y-%M-%d
+        date2(str):last date %Y-%M-%d
+    Returns:
+        list of peaks position
+    """
+    df = df.loc[df[col_date].between(date1, date2, inclusive='both')]
+
+    date_of_min = pd.to_datetime(df.loc[df[data] == df[data].min()][col_date].values[0])
+    day_of_min = (date_of_min - df[col_date].min()).days
+
+    date_of_max = pd.to_datetime(df.loc[df[data] == df[data].max()][col_date].values[0])
+    day_of_max = (date_of_min - df[col_date].max()).days
+
+    return date_of_min, day_of_min, date_of_max, day_of_max
+
+
+def get_curve_length(df, col_date, data, date1, date2):
+    """ estimate the curve length from  between two dates
+    Args:
+        df (Dataframe): data frame of data
+        col_date (str): name of the column containing the x-data (here datetime)
+        data (str): name of the column containing the y-data (SAR signal, NDVI, ....)
+        date1(str): first date %Y-%M-%d
+        date2(str):last date %Y-%M-%d
+    Returns:
+        list of peaks position
+    """
+
+    def pythagore(a, b):
+        dist = (a ** 2 + b ** 2) ** 0.5
+        return dist
+
+    df = df.loc[df[col_date].between(date1, date2, inclusive='both')]
+    df = df[[data, col_date]]
+    df = df.diff()
+    df = df.dropna()
+
+    length = [pythagore(a, b) for a, b in zip(df[col_date].dt.days, df[data])]
+
+    length = sum(length)
+
+    return length
+
+
+def gaussian_smoothing(df, col_data_to_smooth, sigma):
+    """ Smooth a time series with a guassian function
     Args:
         df (DataFrame): dataframe of data
         col_data_to_smooth (str): nam of columns to smooth
@@ -39,6 +115,24 @@ def get_slope_from_temporal_series(x, y):
     return slope, r_value ** 2
 
 
+def get_area_under_curve(df, col_date, data, date1, date2):
+    """ get the area under a curve
+    Args:
+        df (Dataframe): data frame of data
+        col_date (str): name of the column containing the x-data (here datetime)
+        data (str): name of the column containing the y-data (SAR signal, NDVI, ....)
+        date1(str): first date %Y-%M-%d
+        date2(str):last date %Y-%M-%d
+    Returns:
+        list of peaks position
+    """
+    df = df.loc[df[col_date].between(date1, date2, inclusive='both')]
+
+    area = trapz(df[data], x=(df[col_date] - df[col_date].min()).dt.days)
+
+    return area
+
+
 def generate_features(df, plot_name, plot_class, cols_predictive, col_date, clos_cmp=None):
     """Generates features (input to RF classifier)
     Args:
@@ -55,6 +149,9 @@ def generate_features(df, plot_name, plot_class, cols_predictive, col_date, clos
     # get features
     all_features = []
 
+    # sort values by plot name and dates
+    df = df.sort_values([plot_name, col_date])
+
     for nb, sdf in df.groupby(by=plot_name):
         features = {}
         features.update({f'label': nb})
@@ -62,32 +159,23 @@ def generate_features(df, plot_name, plot_class, cols_predictive, col_date, clos
 
         # get feature variable from each predictive col
         for col in cols_predictive:
-            # compute slope at start of the year
-            data_slope = sdf.loc[df[col_date].between('2015-01-1', '2015-7-1', inclusive='both')]
-            slope, _ = get_slope_from_temporal_series(data_slope[col_date].dt.strftime('%y%j').astype(float),
-                                                      data_slope[col])
-            features.update({f'slp_start_{col}': slope})
 
-            # compute slope at end of the year
-            data_slope = sdf.loc[df[col_date].between('2015-08-1', '2015-9-1', inclusive='both')]
-            slope, _ = get_slope_from_temporal_series(data_slope[col_date].dt.strftime('%y%j').astype(float),
-                                                      data_slope[col])
-            features.update({f'slp_end_{col}': slope})
+            # get first season start # TODO: use only NDVI
+            date_of_min, doy_of_min, _, _ = get_min_max_pos(sdf, col_date, col, '2014-11-01', '2014-12-31')
+            features.update({f'start_{col}': doy_of_min})
 
-            # compute slope for the whole year
-            slope, _ = get_slope_from_temporal_series(sdf[col_date].dt.strftime('%y%j').astype(float), sdf[col])
-            features.update({f'slp_all_{col}': slope})
+            # get first season peak: TODO: use only NDVI
+            _, _, date_of_max, doy_of_max = get_min_max_pos(sdf, col_date, col, date_of_min.strftime('%Y-%m-%d'),
+                                                            '2015-6-01')
+            features.update({f'end_{col}': doy_of_max})
 
-            # compute global variation
-            features.update({f'var_{col}': sdf[col].var()})
-
-            # compute annual mean
-            data_mean = sdf.loc[df[col_date].between('2015-03-1', '2015-08-1', inclusive='both')]
-            features.update(
-                {f'mean_{col}': data_mean[col].mean()})
+            # get the length of the curve from season start to middle of season
+            length = get_curve_length(df, col_date, col, date_of_min.strftime('%Y-%m-%d'),
+                                      date_of_max.strftime('%Y-%m-%d'))
+            features.update({f'length_{col}': length})
 
             # compute the area of the curve
-            area = trapz(sdf[col], x=sdf[col_date].dt.strftime('%y%j').astype(float))
+            area = get_area_under_curve(sdf, col_date, col, date_of_min.strftime('%Y-%m-%d'), '2015-12-31')
             features.update({f'area_{col}': area})
 
             # get the position of the max
