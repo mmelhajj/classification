@@ -124,7 +124,7 @@ def get_area_under_curve(df, col_date, data, date1, date2):
         date1(str): first date %Y-%M-%d
         date2(str):last date %Y-%M-%d
     Returns:
-        list of peaks position
+        (float) area under the curve
     """
     df = df.loc[df[col_date].between(date1, date2, inclusive='both')]
 
