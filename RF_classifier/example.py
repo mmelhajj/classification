@@ -4,6 +4,7 @@ import pandas as pd
 from RF_classifier.common import smooth_variables, normalise_cols
 from RF_classifier.features import generate_features
 from info import outputs
+from gauss_decomp.modelling import gaussian_modelling_ndvi_series
 
 
 def get_example():
@@ -48,12 +49,29 @@ def get_example():
     stats = stats[stats['type_1st_h'] != 'not classified']
     stats = stats[stats['type_1st_h'] != 'fruit']
     stats = stats[stats['type_1st_h'] != 'olive']
+
     # stats = stats[stats['nbPixels'] >= 100]
     stats['VV_dB'] = 10 * np.log10(stats['VV_L'])
     stats['VH_dB'] = 10 * np.log10(stats['VH_L'])
     stats['VV_VH_dB'] = stats['VV_dB'] - stats['VH_dB']
     stats = stats.drop(['VV_L', 'VH_L'], axis='columns')
     stats = stats.sort_values(['name', 'image_date_time_ksa'])
+
+    # get season peak
+    df_peaks = []
+    peaks = {}
+    for name, sdf in stats.groupby(by=['name']):
+        try:
+            sdf = sdf.loc[sdf['image_date_time_ksa'].between('2015-1-01', '2015-12-31')]
+            peaks_pos = gaussian_modelling_ndvi_series(sdf, 'image_date_time_ksa', 'ndvi', 2, 0.001)
+            peaks_pos = peaks_pos[:, 1]
+            if len(peaks_pos) == 2:
+                peaks.update({'name': name, 'peak1': peaks_pos[0], 'peak2': peaks_pos[1]})
+            else:
+                peaks.update({'name': name, 'peak1': peaks_pos[0]})
+        except:
+            print(name)
+
 
     # generate more raw variables
     df = smooth_variables(stats, ['name', 'inc_class', 'year'], ['VV_dB', 'VH_dB', 'VV_VH_dB', 'ndvi'], 2)
