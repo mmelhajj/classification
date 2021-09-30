@@ -2,7 +2,7 @@ import joblib
 import matplotlib.pyplot as plt
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import f1_score
+from sklearn.metrics import f1_score, cohen_kappa_score
 from sklearn.model_selection import train_test_split
 
 from RF_classifier.example import get_example
@@ -13,7 +13,7 @@ features, _, var_names = get_example()
 
 # define inputs and output and split
 df_x = features[var_names]
-df_y = features['ref_class']
+df_y = features[['ref_class1', 'ref_class2']]
 X_train, X_test, y_train, y_test = train_test_split(df_x, df_y, test_size=0.3, random_state=0)
 
 # fit RF regressor classifier: https://towardsdatascience.com/classification-with-random-forests-in-python-29b8381680ed
@@ -28,8 +28,15 @@ model = joblib.load("./random_forest.joblib")
 y_pred = model.predict(X_test)
 
 # get score
-fscore = f1_score(y_test, y_pred, average='macro')
+fscore = f1_score(y_test['ref_class1'], y_pred[:, 0], average='macro')
+kappa = cohen_kappa_score(y_test['ref_class1'], y_pred[:, 0])
 print(f'Fscore : {fscore * 100}')
+print(f'kappa : {kappa * 100}')
+
+fscore = f1_score(y_test['ref_class2'], y_pred[:, 1], average='macro')
+kappa = cohen_kappa_score(y_test['ref_class2'], y_pred[:, 1])
+print(f'Fscore : {fscore * 100}')
+print(f'kappa : {kappa * 100}')
 
 if __name__ == '__main__':
     # get and plot importance
@@ -47,7 +54,6 @@ if __name__ == '__main__':
 
     # save figure
     plt.savefig(f"{outputs}/importance.png", dpi=300, bbox_inches='tight', pad_inches=0.1)
-
 
     # map
 

@@ -133,12 +133,13 @@ def get_area_under_curve(df, col_date, data, date1, date2):
     return area
 
 
-def generate_features(df, plot_name, plot_class, cols_predictive, col_date, clos_cmp=None):
+def generate_features(df, plot_name, plot_class1, plot_class2, cols_predictive, col_date, clos_cmp=None):
     """Generates features (input to RF classifier)
     Args:
         df (DataFrame): stats dataframe wih index date
         plot_name (str): name of cols of plots name
-        plot_class (str): col name for type of the plot
+        plot_class1 (str): col name for type of the plot (1st half of the year)
+        plot_class2 (str): col name for type of the plot (2nd half of the year)
         cols_predictive (list): list of columns name of predictive variables
         col_date (str): name of the cols contains the date information
         clos_cmp (list): list of cols to compare data
@@ -155,7 +156,8 @@ def generate_features(df, plot_name, plot_class, cols_predictive, col_date, clos
     for nb, sdf in df.groupby(by=plot_name):
         features = {}
         features.update({f'label': nb})
-        features.update({f'ref_class': sdf[plot_class].unique()[0]})
+        features.update({f'ref_class1': sdf[plot_class1].unique()[0]})
+        features.update({f'ref_class2': sdf[plot_class2].unique()[0]})
 
         # get feature variable from each predictive col
         for col in cols_predictive:
