@@ -3,7 +3,8 @@ from datetime import datetime
 import pandas as pd
 from pytest import fixture
 
-from RF_classifier.features import peaks_pos, get_curve_length
+from RF_classifier.features import get_curve_length, slope_r2
+from RF_classifier.features import slope_moving_windows
 
 
 @fixture
@@ -16,12 +17,6 @@ def df():
     return df
 
 
-def test_if_peaks_are_correctely_dectected(df):
-    x = peaks_pos(df, 'date', 'data')
-    assert x[0] == datetime(2020, 1, 4)
-    assert len(x) == 1
-
-
 def test_curve_length(df):
     length = get_curve_length(df, 'date', 'data', '2020-1-1', '2020-1-7')
     assert length == (1 + 1) ** 0.5 * (len(df['date']) - 1)
@@ -31,3 +26,13 @@ def test_curve_length(df):
     length1 = get_curve_length(df1, 'date', 'data', '2020-1-1', '2020-1-7')
 
     assert length1 > length
+
+
+def test_slope_moving_windows(df):
+    s = slope_moving_windows(df, 5, 'date', 'data')
+    assert s[0] == slope_r2([0, 1, 2, 3, 4], [1, 2, 3, 4, 3])[0]
+    assert s[1] == slope_r2([1, 2, 3, 4, 5], [2, 3, 4, 3, 2])[0]
+    assert s[2] == slope_r2([2, 3, 4, 5, 6], [3, 4, 3, 2, 1])[0]
+
+    s = slope_moving_windows(df, 7, 'date', 'data')
+    assert s[0] == slope_r2([0, 1, 2, 3, 4, 5, 6], [1, 2, 3, 4, 3, 2, 1])[0]

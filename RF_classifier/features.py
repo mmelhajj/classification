@@ -37,28 +37,6 @@ def peaks_pos(df, col_date, data):
     return peaks
 
 
-def get_min_max_pos(df, col_date, data, date1, date2):
-    """ Gives the position (x-value) of the min and the max value
-    Args:
-        df (Dataframe): data frame of data
-        col_date (str): name of the column containing the x-data (here datetime)
-        data (str): name of the column containing the y-data (SAR signal, NDVI, ....)
-        date1(str): first date %Y-%M-%d
-        date2(str):last date %Y-%M-%d
-    Returns:
-        list of peaks position
-    """
-    df = df.loc[df[col_date].between(date1, date2, inclusive='both')]
-
-    date_of_min = pd.to_datetime(df.loc[df[data] == df[data].min()][col_date].values[0])
-    day_of_min = (date_of_min - df[col_date].min()).days
-
-    date_of_max = pd.to_datetime(df.loc[df[data] == df[data].max()][col_date].values[0])
-    day_of_max = (date_of_min - df[col_date].max()).days
-
-    return date_of_min, day_of_min, date_of_max, day_of_max
-
-
 def get_curve_length(df, col_date, data, date1, date2):
     """ estimate the curve length from  between two dates
     Args:
@@ -102,11 +80,11 @@ def gaussian_smoothing(df, col_data_to_smooth, sigma):
     return df
 
 
-def get_slope_from_temporal_series(x, y):
+def slope_r2(x, y):
     """ get slope of temporal series
     Args:
         x (Datetime): datetime
-        y (float): variable
+        y (list): variable
     Return:
         slope (float): slope
     """
@@ -131,6 +109,23 @@ def get_area_under_curve(df, col_date, data, date1, date2):
     area = trapz(df[data], x=(df[col_date] - df[col_date].min()).dt.days)
 
     return area
+
+
+def slope_moving_windows(df, windows, col_date, col):
+    """ gives the slope of the time series
+    Args:
+        df (Dataframe): data frame of data
+        windows (int): windows length 3,5,7,.....
+        col_date (str): name of the column containing the x-data (here datetime in days)
+        col_date (str): name of the column containing the y-data (NDVI, SAR scattering)
+
+    Returns:
+        (list): list containing slopes
+    """
+    df_windows = [df.iloc[i:i + windows] for i in range(len(df[col]) - windows + 1)]
+    slope = [slope_r2((sdf[col_date] - sdf[col_date].min()).dt.days, sdf[col])[0] for sdf in df_windows]
+
+    return slope
 
 
 def generate_features(df, plot_name, plot_class1, plot_class2, cols_predictive, col_date, clos_cmp=None):
@@ -162,28 +157,14 @@ def generate_features(df, plot_name, plot_class1, plot_class2, cols_predictive, 
         # get feature variable from each predictive col
         for col in cols_predictive:
 
-            # get first season start # TODO: use only NDVI
-            date_of_min, doy_of_min, _, _ = get_min_max_pos(sdf, col_date, col, '2014-11-01', '2014-12-31')
-            features.update({f'start_{col}': doy_of_min})
-
-            # get first season peak: TODO: use only NDVI
-            _, _, date_of_max, doy_of_max = get_min_max_pos(sdf, col_date, col, date_of_min.strftime('%Y-%m-%d'),
-                                                            '2015-6-01')
-            features.update({f'end_{col}': doy_of_max})
-
-            # get the length of the curve from season start to middle of season
-            length = get_curve_length(df, col_date, col, date_of_min.strftime('%Y-%m-%d'),
-                                      date_of_max.strftime('%Y-%m-%d'))
-            features.update({f'length_{col}': length})
-
             # compute the area of the curve
-            area = get_area_under_curve(sdf, col_date, col, date_of_min.strftime('%Y-%m-%d'), '2015-12-31')
+            area = get_area_under_curve(sdf, col_date, col, '2015-1-1', '2015-12-31')
             features.update({f'area_{col}': area})
 
-            # get the position of the max
-            pos = pd.to_datetime(sdf.loc[sdf[col] == sdf[col].max()][col_date].values[0]).dayofyear
-            features.update({f'pos_{col}': pos})
-
+            # get moving slope
+            slopes = slope_moving_windows(sdf, 7, col_date, col)
+            for i, s in enumerate(slopes):
+                features.update({f'slope_{i}_{col}': s})
             # two cols corr
             if clos_cmp:
                 # get combination with size of 2
@@ -192,7 +173,7 @@ def generate_features(df, plot_name, plot_class1, plot_class2, cols_predictive, 
                     el1 = c[0]
                     el2 = c[1]
                     # correlation between two elements
-                    _, r = get_slope_from_temporal_series(sdf[el1], sdf[el2])
+                    _, r = slope_r2(sdf[el1], sdf[el2])
                     features.update({f'r2_{el1}_{el2}': r})
 
         all_features.append(features)
