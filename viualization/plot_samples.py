@@ -30,4 +30,5 @@ ax.tick_params(axis='x', labelsize=20, rotation=90)
 ax.tick_params(axis='y', labelsize=30, rotation=0)
 
 plt.savefig(f"{outputs}/figures/data_set.png", bbox_inches='tight', pad_inches=0.1)
+plt.show()
 plt.close()
