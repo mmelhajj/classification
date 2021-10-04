@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 
 from RF_classifier.common import smooth_variables
+from RF_classifier.correct_class_name import update_calss_name
 from RF_classifier.features import generate_features
 from info import outputs
 
@@ -12,7 +13,21 @@ def get_example():
     stats = pd.read_csv(outputs / 'stats/hand_map.csv', sep=',', parse_dates=['image_date_time_ksa'])
     stats = stats.loc[stats['image_date_time_ksa'].between('2014-11-01', '2015-12-31')]
 
-    # add the ndvi to SAR data date by interpolation
+    stats['type_1st_h'] = stats.apply(
+        lambda row: update_calss_name[row['name']]['class_1st_half'] if row['name'] in update_calss_name.keys() else
+        row['type_1st_h'],
+        axis=1)
+
+    stats['type_2nd_h'] = stats.apply(
+        lambda row: update_calss_name[row['name']]['class_2nd_half'] if row['name'] in update_calss_name.keys() else
+        row['type_2nd_h'],
+        axis=1)
+
+    # delete multicrop data
+    # multicrop data where splitted manually, and all parts have the same name
+    # if we drop by name these data will not be longer available
+    stats = stats.drop_duplicates(subset=['name', 'image_date_time_ksa'], keep=False)
+
     ndvi = pd.read_csv(outputs / 'stats/hand_map_ndvi.csv', sep=',', parse_dates=['image_date_time_ksa'])
     ndvi = ndvi[['image_date_time_ksa', 'name', 'ndvi']]
     # to create nan when the NDVI do not match SAR time
@@ -45,7 +60,7 @@ def get_example():
     stats = all_df.reset_index()
 
     stats = stats[stats['type_1st_h'] != 'not classified']
-    stats = stats[stats['type_1st_h'] != 'empty']
+    # stats = stats[stats['type_1st_h'] != 'empty']
     stats = stats[stats['type_1st_h'] != 'fruit']
     stats = stats[stats['type_1st_h'] != 'olive']
 
@@ -67,6 +82,18 @@ def get_example():
     features = generate_features(df, 'name', 'type_1st_h', 'type_2nd_h',
                                  ['VV_dB_smooth', 'VH_dB_smooth', 'VV_VH_dB_smooth', 'ndvi_smooth'],
                                  'image_date_time_ksa', clos_cmp=['VV_dB_smooth', 'VH_dB_smooth'])
+
+    # drop classes with less than 3 plot
+    features['combi'] = features['ref_class1'] + "_" + features['ref_class2']
+    nb = features[['label', 'combi']].groupby(by=['combi']).count().add_suffix('_count')
+    nb = nb[nb['label_count'] > 5]
+    features = features.merge(nb, left_on='combi', right_on=nb.index, how='inner')
+    features = features.drop(['combi', 'label_count'], axis='columns')
+
+    # drom from the df
+    df['combi'] = df['type_1st_h'] + "_" + df['type_2nd_h']
+    df = df.merge(nb, left_on='combi', right_on=nb.index, how='inner')
+    df = df.drop(['combi', 'label_count'], axis='columns')
 
     # normalize features between 0 and 1
     var_names = features.columns.to_list()
