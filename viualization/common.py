@@ -1,4 +1,5 @@
 import numpy as np
+import seaborn as sns
 from scipy.stats import linregress
 
 
@@ -72,3 +73,14 @@ def plot_hist(x, bins, x_label, y_label, title, ax, color='black', font=35, rota
 
     ax.tick_params(axis='x', labelsize=font, rotation=rotation)
     ax.tick_params(axis='y', labelsize=font)
+
+
+def plot_conf_matrix(cm, x_label, y_label, labels, font, ax, font_scale=3.0):
+    labels.sort()
+
+    ax = sns.heatmap(cm, annot=True, fmt='g', ax=ax)
+    sns.set(font_scale=font_scale)
+    ax.set_xlabel(x_label, fontsize=font)
+    ax.set_ylabel(y_label, fontsize=font)
+    ax.xaxis.set_ticklabels(labels, fontsize=font)
+    ax.yaxis.set_ticklabels(labels, fontsize=font)
