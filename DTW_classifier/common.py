@@ -47,3 +47,18 @@ def dtw_compute(df_query, plot_id, variable, df_template, plot_type):
     all_df = pd.DataFrame(all_data)
 
     return all_df
+
+
+def dtw_calculation(df_query, query, template):
+    """
+    Args:
+        df_query (DataFrame): df containing query profile for each plot
+        query (str): col name of the query variable
+        template (array): col name of the template variable
+    Returns:
+        cost (float): the coast value
+    """
+    alignment = dtw(df_query[query].values, template, keep_internals=True)
+    cost = alignment.costMatrix.flatten()[-1]
+
+    return cost
