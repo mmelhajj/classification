@@ -26,7 +26,7 @@ for index, data in enumerate(df['name']):
 # set axis
 ax.set_xlabel('season1/season2', fontsize=35)
 ax.set_ylabel('Number of plots', fontsize=35)
-ax.tick_params(axis='x', labelsize=20, rotation=90)
+ax.tick_params(axis='x', labelsize=30, rotation=90)
 ax.tick_params(axis='y', labelsize=30, rotation=0)
 
 plt.savefig(f"{outputs}/figures/data_set.png", bbox_inches='tight', pad_inches=0.1)
