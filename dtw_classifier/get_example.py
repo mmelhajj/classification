@@ -1,20 +1,12 @@
 import numpy as np
 import pandas as pd
-
-from RF_classifier.common import smooth_variables, normalise_cols
 from info import outputs
+from RF_classifier.common import smooth_variables, normalise_cols
+from RF_classifier.example import prepare_data
 
 
 def get_dtw_example():
-    # get stat and prepare features
-    stats = pd.read_csv(outputs / 'stats/hand_map.csv', sep=',', parse_dates=['image_date_time_ksa'])
-    stats = stats[stats['type_1st_h'] != 'not classified']
-    # stats = stats[stats['nbPixels'] >= 100]
-    stats['VV_dB'] = 10 * np.log10(stats['VV_L'])
-    stats['VH_dB'] = 10 * np.log10(stats['VH_L'])
-    stats['VV_VH_dB'] = stats['VV_dB'] - stats['VH_dB']
-    stats = stats.drop(['VV_L', 'VH_L'], axis='columns')
-    stats = stats.sort_values(['name', 'image_date_time_ksa'])
+    stats = prepare_data()
 
     # generate more raw variables
     df = smooth_variables(stats, ['name', 'inc_class', 'year'], ['VV_dB', 'VH_dB', 'VV_VH_dB'], 2)

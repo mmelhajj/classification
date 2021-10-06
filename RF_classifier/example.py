@@ -7,9 +7,7 @@ from RF_classifier.features import generate_features
 from info import outputs
 
 
-def get_example():
-    # Prepare for features
-    # read SAR data
+def prepare_data():
     stats = pd.read_csv(outputs / 'stats/hand_map.csv', sep=',', parse_dates=['image_date_time_ksa'])
     stats = stats.loc[stats['image_date_time_ksa'].between('2014-11-01', '2015-12-31')]
 
@@ -22,6 +20,10 @@ def get_example():
         lambda row: update_calss_name[row['name']]['class_2nd_half'] if row['name'] in update_calss_name.keys() else
         row['type_2nd_h'],
         axis=1)
+
+    # replace sudanese_corn by corn
+    stats["type_1st_h"].replace({"sudanese_corn": "corn", "alfaalfa": "alfalfa"}, inplace=True)
+    stats["type_2nd_h"].replace({"sudanese_corn": "corn", "alfaalfa": "alfalfa"}, inplace=True)
 
     # delete multicrop data
     # multicrop data where splitted manually, and all parts have the same name
@@ -59,8 +61,8 @@ def get_example():
     all_df = pd.concat(all_df)
     stats = all_df.reset_index()
 
-    stats = stats[stats['type_1st_h'] != 'not classified']
-    # stats = stats[stats['type_1st_h'] != 'empty']
+    stats = stats[stats['type_1st_h'] != 'not class']
+    stats = stats[stats['type_1st_h'] != 'no_name']
     stats = stats[stats['type_1st_h'] != 'fruit']
     stats = stats[stats['type_1st_h'] != 'olive']
 
@@ -73,6 +75,12 @@ def get_example():
 
     # generate more raw variables
     df = smooth_variables(stats, ['name', 'inc_class', 'year'], ['VV_dB', 'VH_dB', 'VV_VH_dB', 'ndvi'], 2)
+
+    return df
+
+
+def get_example():
+    df = prepare_data()
 
     df = df[
         ['name', 'VV_dB_smooth', 'VH_dB_smooth', 'VV_VH_dB_smooth', 'type_1st_h', 'type_2nd_h', 'image_date_time_ksa',
