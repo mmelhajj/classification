@@ -1,11 +1,11 @@
 import matplotlib.pyplot as plt
 
-from RF_classifier.example import get_example
+from RF_classifier.example import get_features
 from info import outputs
 from viualization.common import plot_temporal_evolution
 
 # get example
-_, df, _ = get_example()
+_, df, _ = get_features()
 
 # get all combinations
 df['combi'] = df['type_1st_h'] + '/' + df['type_2nd_h']

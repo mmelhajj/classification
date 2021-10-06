@@ -1,10 +1,10 @@
 import matplotlib.pyplot as plt
 
-from RF_classifier.example import get_example
+from RF_classifier.example import get_features
 from info import outputs
 
 # get example
-_, df, _ = get_example()
+_, df, _ = get_features()
 
 # drop duplicate
 df = df.drop_duplicates(['name'])

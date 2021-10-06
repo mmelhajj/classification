@@ -79,7 +79,8 @@ def prepare_data():
     return df
 
 
-def get_example():
+def get_features():
+    # get SAR and optical temporal profile
     df = prepare_data()
 
     df = df[

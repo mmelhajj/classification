@@ -2,12 +2,12 @@ import joblib
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from RF_classifier.example import get_example
+from RF_classifier.example import get_features
 from info import outputs, classfier
 from viualization.common import plot_hist
 
 # get example
-features, _, var_names = get_example()
+features, _, var_names = get_features()
 # drop col and set index
 features = features.drop(['label'], axis='columns')
 features['ref_classes'] = features['ref_class1'] + "_" + features['ref_class2']

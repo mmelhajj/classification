@@ -5,12 +5,12 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import f1_score, cohen_kappa_score, confusion_matrix
 from sklearn.model_selection import train_test_split
 
-from RF_classifier.example import get_example
+from RF_classifier.example import get_features
 from info import outputs
 from viualization.common import plot_conf_matrix
 
 # get feature example
-features, _, var_names = get_example()
+features, _, var_names = get_features()
 
 # define inputs and output and split
 df_x = features[var_names]
