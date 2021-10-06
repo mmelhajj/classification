@@ -53,4 +53,5 @@ update_calss_name = {'D1': {'class_1st_half': 'barely', 'class_2nd_half': 'empty
                      'D8': {'class_1st_half': 'wheat', 'class_2nd_half': 'empty'},
                      'E36': {'class_1st_half': 'wheat', 'class_2nd_half': 'empty'},
                      'E65': {'class_1st_half': 'wheat', 'class_2nd_half': 'empty'},
+                     '132E': {'class_1st_half': 'wheat', 'class_2nd_half': 'empty'},
                      }
