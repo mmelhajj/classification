@@ -1,42 +1,37 @@
 """extracts template for each crop and save in df"""
-from datetime import datetime
 
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from RF_classifier.common import normalise_cols
-from RF_classifier.example import get_example
+from RF_classifier.example import prepare_data
 from info import outputs
 from viualization.common import plot_temporal_evolution
 
 # get example
-_, df, _ = get_example()
+df = prepare_data()
 
-# define date to extract the template
-cycle_start_end = {'wheat': {'start': datetime(2014, 1, 1), 'end': datetime(2015, 12, 31)},
-                   'alfaalfa': {'start': datetime(2014, 1, 1), 'end': datetime(2015, 12, 31)},
-                   'barely': {'start': datetime(2014, 1, 1), 'end': datetime(2015, 12, 31)},
-                   'fruit': {'start': datetime(2014, 1, 1), 'end': datetime(2015, 12, 31)},
-                   'olive': {'start': datetime(2014, 1, 1), 'end': datetime(2015, 12, 31)},
-                   'onion': {'start': datetime(2014, 1, 1), 'end': datetime(2015, 12, 31)},
-                   'potato': {'start': datetime(2014, 1, 1), 'end': datetime(2015, 12, 31)},
-                   'sudanese corn': {'start': datetime(2014, 1, 1), 'end': datetime(2015, 12, 31)}}
+df['combi'] = df['type_1st_h'] + "_" + df['type_2nd_h']
+
+# # define date to extract the template
+# cycle_start_end = {'wheat': {'start': datetime(2014, 1, 1), 'end': datetime(2015, 12, 31)},
+#                    'alfalfa': {'start': datetime(2014, 1, 1), 'end': datetime(2015, 12, 31)},
+#                    'barely': {'start': datetime(2014, 1, 1), 'end': datetime(2015, 12, 31)},
+#                    'fruit': {'start': datetime(2014, 1, 1), 'end': datetime(2015, 12, 31)},
+#                    'olive': {'start': datetime(2014, 1, 1), 'end': datetime(2015, 12, 31)},
+#                    'onion': {'start': datetime(2014, 1, 1), 'end': datetime(2015, 12, 31)},
+#                    'potato': {'start': datetime(2014, 1, 1), 'end': datetime(2015, 12, 31)},
+#                    'corn': {'start': datetime(2014, 1, 1), 'end': datetime(2015, 12, 31)}}
 
 # average the profile for each crop type separately
 all_df = []
-for name, sdf in df.groupby(by=['type_1st_h']):
-    sub_sdf = sdf.loc[sdf['image_date_time_ksa'].between(cycle_start_end[name]['start'], cycle_start_end[name]['end'])]
-    sub_sdf = sub_sdf[
+for name, sdf in df.groupby(by=['combi']):
+    sub_sdf = sdf[
         ['projectedInc', 'image_date_time_ksa', 'VV_dB', 'VH_dB', 'VV_VH_dB', 'VV_dB_smooth', 'VH_dB_smooth',
-         'VV_VH_dB_smooth']].groupby(by=['image_date_time_ksa']).mean()
+         'VV_VH_dB_smooth', 'ndvi_smooth']].groupby(by=['image_date_time_ksa']).mean()
     sub_sdf['ref_class'] = name
     all_df.append(sub_sdf)
 
 df = pd.concat(all_df)
-
-# scale data between 0 and 1
-# use ref class as grouper
-df = normalise_cols(df, ['VV_dB', 'VH_dB', 'VV_VH_dB', 'VV_dB_smooth', 'VH_dB_smooth', 'VV_VH_dB_smooth'], 'ref_class')
 
 # save in df
 with open(outputs / 'template.csv', 'w') as temp:
@@ -44,37 +39,35 @@ with open(outputs / 'template.csv', 'w') as temp:
 
 # plot to verify
 if __name__ == '__main__':
-    fig, axes = plt.subplots(ncols=2, nrows=4, figsize=(15, 15), sharex='all')
-    axes = axes.flatten()
+    n_rows = len(df['ref_class'].unique())
+    fig, axes = plt.subplots(ncols=4, nrows=n_rows, figsize=(15, 15), sharex='all')
     for id, (name, sdf) in enumerate(df.groupby(by=['ref_class'])):
+        print(name, id)
         # set X ad Ys
         date = sdf.index
-        vv_db = sdf['VV_dB']
         vv_smooth_db = sdf['VV_dB_smooth']
 
-        vh_db = sdf['VH_dB']
         vh_smooth_db = sdf['VH_dB_smooth']
 
-        vv_vh_db = sdf['VV_VH_dB']
         vv_vh_smooth_db = sdf['VV_VH_dB_smooth']
 
+        ndvi_smooth = sdf['ndvi_smooth']
+
         # plot for VV
-        plot_temporal_evolution(x=date, y=vv_smooth_db, ax=axes[id], y_label='', text_font_size=30,
-                                xylabel_font_size=30, marker='o', ls='-', ylim=None, label='VV')
-        plot_temporal_evolution(x=date, y=vv_db, ax=axes[id], y_label='', text_font_size=30,
+        plot_temporal_evolution(x=date, y=vv_smooth_db, ax=axes[id, 0], y_label='', text_font_size=30,
                                 xylabel_font_size=30, marker='o', ls='-', ylim=None, label='VV_sm')
+
         # # plot for VH
-        # plot_temporal_evolution(x=date, y=vh_smooth_db, ax=axes[id], y_label='', text_font_size=30,
-        #                         xylabel_font_size=30, marker='x', ls='-', ylim=None, label='VH')
-        # plot_temporal_evolution(x=date, y=vh_db, ax=axes[id], y_label='', text_font_size=30,
-        #                         xylabel_font_size=30, marker='x', ls='-', ylim=None, label='VH_sm')
+        plot_temporal_evolution(x=date, y=vh_smooth_db, ax=axes[id, 1], y_label='', text_font_size=30,
+                                xylabel_font_size=30, marker='o', ls='-', ylim=None, label='VH_sm')
         # # plot for VV-VH
-        # plot_temporal_evolution(x=date, y=vv_vh_smooth_db, ax=axes[id], y_label='', text_font_size=30,
-        #                         xylabel_font_size=30, marker='x', ls='-', ylim=None, label='VV-VH')
-        # plot_temporal_evolution(x=date, y=vv_vh_db, ax=axes[id], y_label='', text_font_size=30,
-        #                         xylabel_font_size=30, marker='x', ls='-', ylim=None, label='VV-VH_sm')
+        plot_temporal_evolution(x=date, y=vv_vh_smooth_db, ax=axes[id, 2], y_label='', text_font_size=30,
+                                xylabel_font_size=30, marker='o', ls='-', ylim=None, label='VV-VH_sm')
+        # # plot for ndvi
+        plot_temporal_evolution(x=date, y=ndvi_smooth, ax=axes[id, 3], y_label='', text_font_size=30,
+                                xylabel_font_size=30, marker='o', ls='-', ylim=None, label='ndvi_smooth')
 
-        axes[id].legend(ncol=2)
+        for x in range(4):
+            axes[id, x].set_title(name)
 
-        axes[id].set_title(name)
     plt.show()
