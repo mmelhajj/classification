@@ -162,7 +162,7 @@ def generate_features(df, plot_name, plot_class1, plot_class2, cols_predictive, 
             features.update({f'area_{col}': area})
 
             # get moving slope
-            slopes = slope_moving_windows(sdf, 7, col_date, col)
+            slopes = slope_moving_windows(sdf, 3, col_date, col)
             for i, s in enumerate(slopes):
                 features.update({f'slope_{i}_{col}': s})
             # two cols corr
