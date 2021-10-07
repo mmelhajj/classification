@@ -1,52 +1,83 @@
-import pandas as pd
-from dtw import *
-from scipy import stats
+import numpy as np
+import scipy.spatial
 
 
-def warp_signal(query, template):
-    """
+def compute_cost_matrix(X, Y, metric='euclidean'):
+    """Compute the cost matrix of two feature sequences
+
+    Notebook: C3/C3S2_DTWbasic.ipynb
+
     Args:
-        query (DataFrame):
-        template(DataFrame):
+        X (np.ndarray): Sequence 1
+        Y (np.ndarray): Sequence 2
+        metric (str): Cost metric, a valid strings for scipy.spatial.distance.cdist (Default value = 'euclidean')
+
     Returns:
-
+        C (np.ndarray): Cost matrix
     """
-    query = query.values
-    template = template.values
-    alignment = dtw(query, template, keep_internals=True)
-    wq = warp(alignment, index_reference=False)
-
-    distance = alignment.distance
-
-    slope, intercept, r_value, p_value, std_err = stats.linregress(query[:len(wq)], query[wq])
-
-    return r_value, distance
+    X, Y = np.atleast_2d(X, Y)
+    C = scipy.spatial.distance.cdist(X.T, Y.T, metric=metric)
+    return C
 
 
-def dtw_compute(df_query, plot_id, variable, df_template, plot_type):
-    """
+def compute_accumulated_cost_matrix(C):
+    """Compute the accumulated cost matrix given the cost matrix
+
+    Notebook: C3/C3S2_DTWbasic.ipynb
+
     Args:
-        df_query (DataFrame): df containing query profile for each plot
-        plot_id (str): column name for a plot id
-        variable (list): list of column name for SAR of optical variable plot id
-        df_template(DataFrame):  df containing template profile for each crop type
-        plot_type(str): column name for the plot type in template df
+        C (np.ndarray): Cost matrix
+
     Returns:
-        df (DataFrame): distance between query profile and template profile for each plot
+        D (np.ndarray): Accumulated cost matrix
     """
-    all_data = []
+    N = C.shape[0]
+    M = C.shape[1]
+    D = np.zeros((N, M))
+    D[0, 0] = C[0, 0]
+    for n in range(1, N):
+        D[n, 0] = D[n - 1, 0] + C[n, 0]
+    for m in range(1, M):
+        D[0, m] = D[0, m - 1] + C[0, m]
+    for n in range(1, N):
+        for m in range(1, M):
+            D[n, m] = C[n, m] + min(D[n - 1, m], D[n, m - 1], D[n - 1, m - 1])
+    return D
 
-    for plot_id, sdf_query in df_query.groupby(by=[plot_id]):
-        data = {}
-        for c_type, sdf_template in df_template.groupby(by=[plot_type]):
-            for v in variable:
-                r_value, _ = warp_signal(sdf_query[v], sdf_template[v])
-                data.update({'label': plot_id, f'distance_{v}_to_{c_type}': r_value})
-        all_data.append(data)
-    # merge dataframe
-    all_df = pd.DataFrame(all_data)
 
-    return all_df
+def compute_optimal_warping_path(D):
+    """Compute the warping path given an accumulated cost matrix
+
+    Notebook: C3/C3S2_DTWbasic.ipynb
+
+    Args:
+        D (np.ndarray): Accumulated cost matrix
+
+    Returns:
+        P (np.ndarray): Optimal warping path
+    """
+    N = D.shape[0]
+    M = D.shape[1]
+    n = N - 1
+    m = M - 1
+    P = [(n, m)]
+    while n > 0 or m > 0:
+        if n == 0:
+            cell = (0, m - 1)
+        elif m == 0:
+            cell = (n - 1, 0)
+        else:
+            val = min(D[n - 1, m - 1], D[n - 1, m], D[n, m - 1])
+            if val == D[n - 1, m - 1]:
+                cell = (n - 1, m - 1)
+            elif val == D[n - 1, m]:
+                cell = (n - 1, m)
+            else:
+                cell = (n, m - 1)
+        P.append(cell)
+        (n, m) = cell
+    P.reverse()
+    return np.array(P)
 
 
 def dtw_calculation(df_query, query, template):
@@ -58,7 +89,9 @@ def dtw_calculation(df_query, query, template):
     Returns:
         cost (float): the coast value
     """
-    alignment = dtw(df_query[query].values, template, keep_internals=True)
-    cost = alignment.costMatrix.flatten()[-1]
+    C = compute_cost_matrix(df_query[query].values, template, metric='euclidean')
+    D = compute_accumulated_cost_matrix(C)
+    P = compute_optimal_warping_path(D)
+    c_P = sum(C[n, m] for (n, m) in P)
 
-    return cost
+    return c_P
