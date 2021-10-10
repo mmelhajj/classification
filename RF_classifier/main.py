@@ -15,7 +15,7 @@ features, _, var_names = get_features()
 # define inputs and output and split
 df_x = features[var_names]
 df_y = features[['ref_class1', 'ref_class2']]
-X_train, X_test, y_train, y_test = train_test_split(df_x, df_y, test_size=0.3, random_state=0)
+X_train, X_test, y_train, y_test = train_test_split(df_x, df_y, test_size=0.5, random_state=0)
 
 # fit RF regressor classifier: https://towardsdatascience.com/classification-with-random-forests-in-python-29b8381680ed
 model = RandomForestClassifier(n_estimators=100, random_state=0)
@@ -31,7 +31,7 @@ y_pred = model.predict(X_test)
 if __name__ == '__main__':
     # get score and plot the confusion matrix
     for i, (true, pred) in enumerate(zip([y_test['ref_class1'], y_test['ref_class2']], [y_pred[:, 0], y_pred[:, 1]])):
-        fig_, ax = plt.subplots(ncols=1, nrows=1, figsize=(15, 15))
+        fig_, ax = plt.subplots(ncols=1, nrows=1, figsize=(5, 5))
         # get label
         labels = true.unique().tolist()
         labels.sort()
@@ -46,10 +46,10 @@ if __name__ == '__main__':
         cm = confusion_matrix(true, pred)
 
         # add title
-        ax.set_title(f'season{i + 1}/ fscore:{fscore} % - Kappa: {kappa} %', fontsize=20)
+        ax.set_title(f'Season{i + 1}, Fscore= {fscore} % - Kappa= {kappa} %', fontsize=10)
 
         # plot
-        plot_conf_matrix(cm, 'predicted', 'actual', labels, 20, ax, font_scale=2)
+        plot_conf_matrix(cm, 'Predicted', 'Actual', labels, 10, ax)
         # save figure
         plt.savefig(f"{outputs}/confusion_season{i + 1}.png", dpi=300, bbox_inches='tight', pad_inches=0.1)
 

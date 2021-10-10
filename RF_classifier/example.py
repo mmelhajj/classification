@@ -7,7 +7,7 @@ from RF_classifier.features import generate_features
 from info import outputs
 
 
-def prepare_data():
+def prepare_data(delete_multi_crop=True):
     stats = pd.read_csv(outputs / 'stats/hand_map.csv', sep=',', parse_dates=['image_date_time_ksa'])
     stats = stats.loc[stats['image_date_time_ksa'].between('2014-11-01', '2015-12-31')]
 
@@ -25,10 +25,11 @@ def prepare_data():
     stats["type_1st_h"].replace({"sudanese_corn": "corn", "alfaalfa": "alfalfa"}, inplace=True)
     stats["type_2nd_h"].replace({"sudanese_corn": "corn", "alfaalfa": "alfalfa"}, inplace=True)
 
-    # delete multicrop data
-    # multicrop data where splitted manually, and all parts have the same name
-    # if we drop by name these data will not be longer available
-    stats = stats.drop_duplicates(subset=['name', 'image_date_time_ksa'], keep=False)
+    if delete_multi_crop:
+        # delete multicrop data
+        # multicrop data where splitted manually, and all parts have the same name
+        # if we drop by name these data will not be longer available
+        stats = stats.drop_duplicates(subset=['name', 'image_date_time_ksa'], keep=False)
 
     ndvi = pd.read_csv(outputs / 'stats/hand_map_ndvi.csv', sep=',', parse_dates=['image_date_time_ksa'])
     ndvi = ndvi[['image_date_time_ksa', 'name', 'ndvi']]
@@ -50,7 +51,7 @@ def prepare_data():
     prev_nb = len(stats)
     stats = all_df.merge(stats, left_on=['name', 'image_date_time_ksa'], right_on=['name', 'image_date_time_ksa'],
                          how='inner')
-    assert len(stats) == prev_nb
+    # assert len(stats) == prev_nb
 
     # delete non cultivated plots
     all_df = []
@@ -79,9 +80,9 @@ def prepare_data():
     return df
 
 
-def get_features():
+def get_features(delete_multi_crop=True):
     # get SAR and optical temporal profile
-    df = prepare_data()
+    df = prepare_data(delete_multi_crop=delete_multi_crop)
 
     df = df[
         ['name', 'VV_dB_smooth', 'VH_dB_smooth', 'VV_VH_dB_smooth', 'type_1st_h', 'type_2nd_h', 'image_date_time_ksa',
@@ -90,7 +91,7 @@ def get_features():
     # get features for all segments
     features = generate_features(df, 'name', 'type_1st_h', 'type_2nd_h',
                                  ['VV_dB_smooth', 'VH_dB_smooth', 'VV_VH_dB_smooth', 'ndvi_smooth'],
-                                 'image_date_time_ksa', clos_cmp=['VV_dB_smooth', 'VH_dB_smooth'])
+                                 'image_date_time_ksa')
 
     # drop classes with less than 3 plot
     features['combi'] = features['ref_class1'] + "_" + features['ref_class2']

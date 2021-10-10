@@ -1,6 +1,7 @@
 import numpy as np
 import seaborn as sns
 from scipy.stats import linregress
+from sklearn.metrics import plot_confusion_matrix
 
 
 def plot_scatter_with_corr(x, y, x_label, y_label, title, ax, pos_eq, one_one=False, x_lim=None, y_lim=None,
@@ -75,11 +76,9 @@ def plot_hist(x, bins, x_label, y_label, title, ax, color='black', font=35, rota
     ax.tick_params(axis='y', labelsize=font)
 
 
-def plot_conf_matrix(cm, x_label, y_label, labels, font, ax, font_scale=3.0):
+def plot_conf_matrix(cm, x_label, y_label, labels, font, ax, font_scale='d'):
     labels.sort()
-
-    ax = sns.heatmap(cm, annot=True, fmt='g', ax=ax)
-    sns.set(font_scale=font_scale)
+    ax = sns.heatmap(cm, annot=True, fmt=font_scale, ax=ax)
     ax.set_xlabel(x_label, fontsize=font)
     ax.set_ylabel(y_label, fontsize=font)
     ax.xaxis.set_ticklabels(labels, fontsize=font)

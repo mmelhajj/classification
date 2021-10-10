@@ -111,21 +111,45 @@ def get_area_under_curve(df, col_date, data, date1, date2):
     return area
 
 
-def slope_moving_windows(df, windows, col_date, col):
+def slope_moving_windows(df, windows, col_date, col, starting_date, end_date):
     """ gives the slope of the time series
     Args:
         df (Dataframe): data frame of data
         windows (int): windows length 3,5,7,.....
         col_date (str): name of the column containing the x-data (here datetime in days)
         col_date (str): name of the column containing the y-data (NDVI, SAR scattering)
-
+        starting_date(str): start date %Y-%M-%d
+        end_date(str): end date %Y-%M-%d
     Returns:
         (list): list containing slopes
     """
+    df = df.loc[df[col_date].between(starting_date, end_date)]
     df_windows = [df.iloc[i:i + windows] for i in range(len(df[col]) - windows + 1)]
     slope = [slope_r2((sdf[col_date] - sdf[col_date].min()).dt.days, sdf[col])[0] for sdf in df_windows]
 
     return slope
+
+
+def area_moving_windows(df, windows, col_date, col, starting_date, end_date):
+    """ gives the area of the time series on moving window
+    Args:
+        df (Dataframe): data frame of data
+        windows (int): windows length 3,5,7,.....
+        col_date (str): name of the column containing the x-data (here datetime in days)
+        col_date (str): name of the column containing the y-data (NDVI, SAR scattering)
+        starting_date(str): start date %Y-%M-%d
+        end_date(str): end date %Y-%M-%d
+
+    Returns:
+        (list): list containing slopes
+    """
+
+    df = df.loc[df[col_date].between(starting_date, end_date)]
+    df_windows = [df.iloc[i:i + windows] for i in range(len(df[col]) - windows + 1)]
+
+    area = [trapz(sdf[col], x=(sdf[col_date] - sdf[col_date].min()).dt.days) for sdf in df_windows]
+
+    return area
 
 
 def generate_features(df, plot_name, plot_class1, plot_class2, cols_predictive, col_date, clos_cmp=None):
@@ -157,14 +181,16 @@ def generate_features(df, plot_name, plot_class1, plot_class2, cols_predictive, 
         # get feature variable from each predictive col
         for col in cols_predictive:
 
-            # compute the area of the curve
-            area = get_area_under_curve(sdf, col_date, col, '2015-1-1', '2015-12-31')
-            features.update({f'area_{col}': area})
-
             # get moving slope
-            slopes = slope_moving_windows(sdf, 3, col_date, col)
+            slopes = slope_moving_windows(sdf, 3, col_date, col, '2015-1-1', '2015-12-31')
             for i, s in enumerate(slopes):
                 features.update({f'slope_{i}_{col}': s})
+
+            # get moving areas
+            areas = area_moving_windows(sdf, 3, col_date, col, '2015-1-1', '2015-12-31')
+            for i, a in enumerate(areas):
+                features.update({f'area_{i}_{col}': a})
+
             # two cols corr
             if clos_cmp:
                 # get combination with size of 2
