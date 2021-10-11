@@ -1,9 +1,9 @@
 from RF_classifier.correct_class_name import update_calss_name
 from fmt.common import get_data_from_shape
-from info import vect_clean_path
+from info import vect_clean_path, vect_raw_path
 
 # get the shape file
-shape = vect_clean_path / 'hand_map.shp'
+shape = vect_raw_path / 'hand_map.shp'
 
 gdf = get_data_from_shape(shape)
 
@@ -18,5 +18,13 @@ gdf['type_2nd_h'] = gdf.apply(
 # replace sudanese_corn by corn
 gdf["type_1st_h"].replace({"sudanese_corn": "corn", "alfaalfa": "alfalfa"}, inplace=True)
 gdf["type_2nd_h"].replace({"sudanese_corn": "corn", "alfaalfa": "alfalfa"}, inplace=True)
+
+# remove non useful class, no need for classification
+gdf = gdf[gdf['type_1st_h'] != 'not class']
+gdf = gdf[gdf['type_1st_h'] != 'not classified']
+gdf = gdf[gdf['type_1st_h'] != 'no_name']
+gdf = gdf[gdf['type_1st_h'] != 'fruit']
+gdf = gdf[gdf['type_1st_h'] != 'olive']
+gdf = gdf[gdf['feas_class'] != 'no']
 
 gdf.to_file(vect_clean_path / 'hand_map_fmt.shp')
