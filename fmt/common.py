@@ -1,8 +1,8 @@
-import numpy as np
 import geopandas as gpd
+import numpy as np
 
 
-def get_data_from_shape(shape, cols, save_csv=False, path_csv=None, name_csv=None):
+def get_data_from_shape(shape, cols=None, save_csv=None, path_csv=None, name_csv=None):
     """ converts shape to csv
     Args:
         shape (Path): path and name of the shape file
@@ -14,7 +14,8 @@ def get_data_from_shape(shape, cols, save_csv=False, path_csv=None, name_csv=Non
         gdf (DataFrame): dataframe of data
     """
     gdf = gpd.read_file(shape)
-    gdf = gdf[cols]
+    if cols:
+        gdf = gdf[cols]
 
     # replace None of shape with np.nan
     gdf = gdf.fillna(value=np.nan)
