@@ -75,7 +75,7 @@ def prepare_data(delete_multi_crop=True):
     stats = stats.sort_values(['name', 'image_date_time_ksa'])
 
     # generate more raw variables
-    df = smooth_variables(stats, ['name', 'inc_class', 'year'], ['VV_dB', 'VH_dB', 'VV_VH_dB', 'ndvi'], 2)
+    df = smooth_variables(stats, ['name', 'inc_class'], ['VV_dB', 'VH_dB', 'VV_VH_dB', 'ndvi'], 2)
 
     return df
 
