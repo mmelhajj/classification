@@ -8,7 +8,7 @@ from zonal_stats.zonal_stat import mean_and_count_zonal_stat
 
 # path to inputs
 # shape = Path(f"{outputs}/seg_rad50_sp20.shp")
-shape = vect_clean_path / 'hand_map.shp'
+shape = vect_clean_path / 'hand_map_fmt.shp'
 
 # images
 raster_files = Path(f"{sar_clean_path}").glob('*.tif')

@@ -6,7 +6,7 @@ import pandas as pd
 from info import outputs, L8_path_clean, vect_clean_path
 from zonal_stats.zonal_stat import mean_and_count_zonal_stat
 
-shape = vect_clean_path / 'hand_map.shp'
+shape = vect_clean_path / 'hand_map_fmt.shp'
 
 # images
 raster_files = Path(f"{L8_path_clean}").glob('*.tif')
